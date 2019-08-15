@@ -26,12 +26,14 @@ type SystemConfig struct {
 }
 
 func (sc *SystemConfig) FormatConfig() {
-	//sc.Total.FormatConfig()
-	//sc.OnLineDb.FormatConfig()
-	//sc.LocalDb.FormatConfig()
-	//sc.Task.FormatConfig()
-	//sc.Service.FormatConfig()
-	//sc.SSConfig.FormatConfig()
+	sc.Total.FormatConfig()
+	sc.RunMode.FormatConfig()
+	sc.OnlineConfig.FormatConfig()
+	sc.SvrConfig.FormatConfig()
+	sc.LocalDb.FormatConfig()
+	sc.Task.FormatConfig()
+	sc.Service.FormatConfig()
+	sc.SSConfig.FormatConfig()
 }
 
 func (sc *SystemConfig) ToString() string {
@@ -97,7 +99,7 @@ type systemConfigRunMode struct {
 
 func (sc *systemConfigRunMode) FormatConfig() {
 	sc.Mode = strings.Trim(sc.Mode, " ")
-	if sc.Mode == "" {
+	if sc.Mode == "" || (sc.Mode != string(RunModeMdCollect) && sc.Mode != string(RunModeBbRestore)) {
 		sc.Mode = string(RunModeMdCollect)
 	}
 }
@@ -144,6 +146,9 @@ type systemConfigTask struct {
 
 func (sc *systemConfigTask) FormatConfig() {
 	sc.Cron = strings.Trim(sc.Cron, " ")
+	if sc.Cron == "" {
+		sc.Cron = "0 0/5 * * * ?"
+	}
 }
 
 //服务配置

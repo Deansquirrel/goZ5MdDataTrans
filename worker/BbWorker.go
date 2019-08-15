@@ -5,13 +5,13 @@ import (
 	log "github.com/Deansquirrel/goToolLog"
 )
 
-type mdWorker struct {
+type bbWorker struct {
 }
 
-func NewMdWorker() *mdWorker {
-	return &mdWorker{}
+func NewBbWorker() *bbWorker {
+	return &bbWorker{}
 }
 
-func (r *mdWorker) Test(id string) {
+func (r *bbWorker) Test(id string) {
 	log.Debug(fmt.Sprintf("Test %s", id))
 }
