@@ -9,8 +9,8 @@ const (
 	//PreVersion = "0.0.0 Build20190101"
 	//TestVersion = "0.0.0 Build20190101"
 	Version   = "0.0.0 Build20190101"
-	Type      = "goZ5DataTrans"
-	SecretKey = "goZ5DataTrans"
+	Type      = "Z5MdDataTrans"
+	SecretKey = "Z5MdDataTrans"
 )
 
 var Ctx context.Context

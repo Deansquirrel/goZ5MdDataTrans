@@ -141,13 +141,28 @@ func (c *systemConfigLocalDB) FormatConfig() {
 
 //Task
 type systemConfigTask struct {
-	Cron string `toml:"cron"`
+	UpdateMdYyInfoCron   string `toml:"updateMdYyInfoCron"`
+	UpdateZxKcCron       string `toml:"updateZxKcCron"`
+	UpdateMdHpXsSlHzCron string `toml:"updateMdHpXsSlHzCron"`
+	BbRestoreCron        string `toml:"bbRestoreCron"`
 }
 
 func (sc *systemConfigTask) FormatConfig() {
-	sc.Cron = strings.Trim(sc.Cron, " ")
-	if sc.Cron == "" {
-		sc.Cron = "0 0/5 * * * ?"
+	sc.UpdateMdYyInfoCron = strings.Trim(sc.UpdateMdYyInfoCron, " ")
+	if sc.UpdateMdYyInfoCron == "" {
+		sc.UpdateMdYyInfoCron = "0 0/5 * * * ?"
+	}
+	sc.UpdateZxKcCron = strings.Trim(sc.UpdateZxKcCron, " ")
+	if sc.UpdateZxKcCron == "" {
+		sc.UpdateZxKcCron = "0 1/5 * * * ?"
+	}
+	sc.UpdateMdHpXsSlHzCron = strings.Trim(sc.UpdateMdHpXsSlHzCron, " ")
+	if sc.UpdateMdHpXsSlHzCron == "" {
+		sc.UpdateMdHpXsSlHzCron = "0 3/5 * * * ?"
+	}
+	sc.BbRestoreCron = strings.Trim(sc.BbRestoreCron, " ")
+	if sc.BbRestoreCron == "" {
+		sc.BbRestoreCron = "15/30 * * * * ?"
 	}
 }
 

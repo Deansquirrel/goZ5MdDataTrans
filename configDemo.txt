@@ -29,7 +29,10 @@ pwd=""
 
 [task]
 # cron
-cron=""
+updateMdYyInfoCron=""
+updateZxKcCron=""
+updateMdHpXsSlHzCron=""
+bbRestoreCron=""
 
 [service]
 # 安装为服务时所需配置

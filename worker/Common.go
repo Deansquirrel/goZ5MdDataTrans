@@ -188,10 +188,10 @@ func (c *common) panicHandle(v interface{}) {
 	log.Error(fmt.Sprintf("panicHandle: %s", v))
 }
 
-func (c *common) addWorker(key string, cmd func(id string)) {
+func (c *common) addWorker(key string, cmd func(id string), cron string) {
 	err := goToolCron.AddFunc(
 		key,
-		global.SysConfig.Task.Cron,
+		cron,
 		goServiceSupportHelper.NewJob().FormatSSJob(key, cmd),
 		c.panicHandle)
 	if err != nil {
@@ -203,7 +203,8 @@ func (c *common) addWorker(key string, cmd func(id string)) {
 func (c *common) addMdWorker() {
 	log.Debug("add md worker")
 	worker := NewMdWorker()
-	c.addWorker("Test", worker.Test)
+	//c.addWorker("UpdateMdYyInfo", worker.UpdateMdYyInfo,global.SysConfig.Task.UpdateMdYyInfoCron)
+	c.addWorker("UpdateMdYyInfo", worker.UpdateMdYyInfo, "0/15 * * * * ?")
 	//c.addWorker("Z3XsCkt", worker.Z3XsCkt)
 	//c.addWorker("Z3XsTht", worker.Z3XsTht)
 	//c.addWorker("Z3MdDbCkt", worker.Z3MdDbCkt)
@@ -217,6 +218,6 @@ func (c *common) addMdWorker() {
 
 func (c *common) addBbWorker() {
 	log.Debug("add bb worker")
-	worker := NewBbWorker()
-	c.addWorker("Test", worker.Test)
+	//worker := NewBbWorker()
+	//c.addWorker("Test", worker.Test)
 }
