@@ -204,19 +204,8 @@ func (c *common) addMdWorker() {
 	log.Debug("add md worker")
 	worker := NewMdWorker()
 	c.addWorker("UpdateMdYyInfo", worker.UpdateMdYyInfo, global.SysConfig.Task.UpdateMdYyInfoCron)
-	//c.addWorker("UpdateMdYyInfo", worker.UpdateMdYyInfo, "0/15 * * * * ?")
 	c.addWorker("UpdateZxKc", worker.UpdateZxKc, global.SysConfig.Task.UpdateZxKcCron)
 	c.addWorker("UpdateMdHpXsSlHz", worker.UpdateMdHpXsSlHz, global.SysConfig.Task.UpdateMdHpXsSlHzCron)
-	//c.addWorker("UpdateMdHpXsSlHz",worker.UpdateMdHpXsSlHz,"0/10 * * * * ?")
-	//c.addWorker("Z3XsCkt", worker.Z3XsCkt)
-	//c.addWorker("Z3XsTht", worker.Z3XsTht)
-	//c.addWorker("Z3MdDbCkt", worker.Z3MdDbCkt)
-	//c.addWorker("Z3DbTzt", worker.Z3DbTzt)
-	//c.addWorker("Z3HpCkDjt", worker.Z3HpCkDjt)
-	//c.addWorker("Z3HpRkDjt", worker.Z3HpRkDjt)
-	//c.addWorker("Z3PkDjt", worker.Z3PkDjt)
-	//c.addWorker("Z3PsTzDt", worker.Z3PsTzDt)
-	//c.addWorker("Z3XsDdThDt", worker.Z3XsDdThDt)
 }
 
 func (c *common) addBbWorker() {
