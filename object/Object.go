@@ -28,6 +28,14 @@ type ZxKc struct {
 	FOprTime time.Time
 }
 
+type ZxKcOpr struct {
+	FOprSn   int64
+	FMdId    int
+	FHpId    int
+	FSl      float64
+	FOprTime time.Time
+}
+
 type MdHpXsSlHz struct {
 	FYyDate  time.Time
 	FMdId    int

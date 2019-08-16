@@ -44,7 +44,34 @@ func (r *bbWorker) RestoreMdYyInfo(id string) {
 }
 
 func (r *bbWorker) RestoreZxKc(id string) {
-	//TODO
+	repOnline, err := repository.NewRepOnline()
+	if err != nil {
+		_ = goServiceSupportHelper.JobErrRecord(id, err.Error())
+		return
+	}
+	for {
+		list, err := repOnline.GetZxKcOpr()
+		if err != nil {
+			_ = goServiceSupportHelper.JobErrRecord(id, err.Error())
+			return
+		}
+		if len(list) < 1 {
+			break
+		}
+		repBb := repository.NewRepBb()
+		for _, opr := range list {
+			err = repBb.RestoreZxKc(opr)
+			if err != nil {
+				_ = goServiceSupportHelper.JobErrRecord(id, err.Error())
+				return
+			}
+			err = repOnline.DelZxKcOpr(opr.FOprSn)
+			if err != nil {
+				_ = goServiceSupportHelper.JobErrRecord(id, err.Error())
+				return
+			}
+		}
+	}
 }
 
 func (r *bbWorker) RestoreMdHpXsSlHz(id string) {

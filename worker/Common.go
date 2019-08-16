@@ -212,4 +212,5 @@ func (c *common) addBbWorker() {
 	log.Debug("add bb worker")
 	worker := NewBbWorker()
 	c.addWorker("RestoreMdYyInfo", worker.RestoreMdYyInfo, global.SysConfig.Task.BbRestoreCron)
+	c.addWorker("RestoreZxKc", worker.RestoreZxKc, global.SysConfig.Task.BbRestoreCron)
 }

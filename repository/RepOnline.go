@@ -281,9 +281,52 @@ func (r *repOnline) DelMdYyInfoOpr(sn int64) error {
 	return nil
 }
 
-func (r *repOnline) GetZxKc() ([]*object.ZxKc, error) {
-	//TODO
-	return nil, nil
+func (r *repOnline) GetZxKcOpr() ([]*object.ZxKcOpr, error) {
+	rows, err := goToolMSSqlHelper.GetRowsBySQL(r.dbConfig, sqlGetZxKcOpr)
+	if err != nil {
+		errMsg := fmt.Sprintf("GetZxKcOpr err: %s", err.Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	rList := make([]*object.ZxKcOpr, 0)
+	var oprSn int64
+	var mdId, hpId int
+	var oprTime time.Time
+	var sl float64
+	for rows.Next() {
+		err = rows.Scan(&oprSn, &mdId, &hpId, &sl, &oprTime)
+		if err != nil {
+			errMsg := fmt.Sprintf("GetZxKcOpr read data err: %s", err.Error())
+			log.Error(errMsg)
+			return nil, errors.New(errMsg)
+		}
+		rList = append(rList, &object.ZxKcOpr{
+			FOprSn:   oprSn,
+			FMdId:    mdId,
+			FHpId:    hpId,
+			FSl:      sl,
+			FOprTime: oprTime,
+		})
+	}
+	if rows.Err() != nil {
+		errMsg := fmt.Sprintf("GetZxKcOpr read data err: %s", rows.Err().Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	return rList, nil
+}
+
+func (r *repOnline) DelZxKcOpr(sn int64) error {
+	err := goToolMSSqlHelper.SetRowsBySQL2000(goToolMSSqlHelper.ConvertDbConfigTo2000(r.dbConfig), sqlDelZxKcOpr, sn)
+	if err != nil {
+		errMsg := fmt.Sprintf("DelZxKcOpr err: %s", err.Error())
+		log.Error(errMsg)
+		return errors.New(errMsg)
+	}
+	return nil
 }
 
 func (r *repOnline) GetMdHpXsSlHz() ([]*object.MdHpXsSlHz, error) {
