@@ -71,6 +71,14 @@ const (
 	sqlDelZxKcOpr = "" +
 		"DELETE FROM [zxkc] " +
 		"WHERE [oprsn]=?"
+
+	sqlGetMdHpXsSlHzOpr = "" +
+		"SELECT TOP 1 [oprsn],[yydate],[mdid],[hpid],[xsqty],[jlsj] " +
+		"FROM [mdhpxsslhz] " +
+		"ORDER BY [oprsn] ASC"
+	sqlDelMdHpXsSlHzOpr = "" +
+		"DELETE FROM [mdhpxsslhz] " +
+		"WHERE [oprsn]=?"
 )
 
 type repOnline struct {
@@ -329,7 +337,52 @@ func (r *repOnline) DelZxKcOpr(sn int64) error {
 	return nil
 }
 
-func (r *repOnline) GetMdHpXsSlHz() ([]*object.MdHpXsSlHz, error) {
-	//TODO
-	return nil, nil
+func (r *repOnline) GetMdHpXsSlHzOpr() ([]*object.MdHpXsSlHzOpr, error) {
+	rows, err := goToolMSSqlHelper.GetRowsBySQL(r.dbConfig, sqlGetMdHpXsSlHzOpr)
+	if err != nil {
+		errMsg := fmt.Sprintf("GetMdHpXsSlHzOpr err: %s", err.Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	rList := make([]*object.MdHpXsSlHzOpr, 0)
+	var fOprSn int64
+	var fYyDate time.Time
+	var fMdId, fHpId int
+	var fXsQty float64
+	var fOprTime time.Time
+	for rows.Next() {
+		err = rows.Scan(&fOprSn, &fYyDate, &fMdId, &fHpId, &fXsQty, &fOprTime)
+		if err != nil {
+			errMsg := fmt.Sprintf("GetMdHpXsSlHzOpr read data err: %s", err.Error())
+			log.Error(errMsg)
+			return nil, errors.New(errMsg)
+		}
+		rList = append(rList, &object.MdHpXsSlHzOpr{
+			FOprSn:   fOprSn,
+			FYyDate:  fYyDate,
+			FMdId:    fMdId,
+			FHpId:    fHpId,
+			FXsQty:   fXsQty,
+			FOprTime: fOprTime,
+		})
+	}
+	if rows.Err() != nil {
+		errMsg := fmt.Sprintf("GetMdHpXsSlHzOpr read data err: %s", rows.Err().Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	return rList, nil
+}
+
+func (r *repOnline) DelMdHpXsSlHzOpr(sn int64) error {
+	err := goToolMSSqlHelper.SetRowsBySQL2000(goToolMSSqlHelper.ConvertDbConfigTo2000(r.dbConfig), sqlDelMdHpXsSlHzOpr, sn)
+	if err != nil {
+		errMsg := fmt.Sprintf("DelMdHpXsSlHzOpr err: %s", err.Error())
+		log.Error(errMsg)
+		return errors.New(errMsg)
+	}
+	return nil
 }

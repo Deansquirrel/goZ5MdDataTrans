@@ -36,6 +36,18 @@ const (
 		"		INSERT INTO [zxkc]([mdid],[hpid],[sl],[lastupdate]) " +
 		"		VALUES (?,?,?,?) " +
 		"	END"
+	sqlRestoreMdHpXsSlHz = "" +
+		"IF EXISTS(SELECT * FROM [mdhpxsslhz] WHERE [yydate]=? AND [mdid]=? AND [hpid]=?) " +
+		"	BEGIN " +
+		"		UPDATE [mdhpxsslhz] " +
+		"		SET [xsqty]=?,[jlsj]=? " +
+		"		WHERE [yydate]=? AND [mdid]=? AND [hpid]=? " +
+		"	END " +
+		"ELSE " +
+		"	BEGIN " +
+		"		INSERT INTO [mdhpxsslhz]([yydate],[mdid],[hpid],[xsqty],[jlsj]) " +
+		"		VALUES (?,?,?,?,?) " +
+		"	END"
 )
 
 type repBb struct {
@@ -86,6 +98,20 @@ func (r *repBb) RestoreZxKc(opr *object.ZxKcOpr) error {
 		goToolCommon.GetDateTimeStrWithMillisecond(opr.FOprTime))
 	if err != nil {
 		errMsg := fmt.Sprintf("RestoreZxKc err: %s", err.Error())
+		log.Error(errMsg)
+		return errors.New(errMsg)
+	}
+	return nil
+}
+
+func (r *repBb) RestoreMdHpXsSlHz(opr *object.MdHpXsSlHzOpr) error {
+	err := goToolMSSqlHelper.SetRowsBySQL2000(r.dbConfig, sqlRestoreMdHpXsSlHz,
+		goToolCommon.GetDateTimeStrWithMillisecond(opr.FYyDate), opr.FMdId, opr.FHpId,
+		opr.FXsQty, opr.FOprTime,
+		goToolCommon.GetDateTimeStrWithMillisecond(opr.FYyDate), opr.FMdId, opr.FHpId,
+		goToolCommon.GetDateTimeStrWithMillisecond(opr.FYyDate), opr.FMdId, opr.FHpId, opr.FXsQty, opr.FOprTime)
+	if err != nil {
+		errMsg := fmt.Sprintf("RestoreMdHpXsSlHz err: %s", err.Error())
 		log.Error(errMsg)
 		return errors.New(errMsg)
 	}

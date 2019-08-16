@@ -189,14 +189,23 @@ func (c *common) panicHandle(v interface{}) {
 }
 
 func (c *common) addWorker(key string, cmd func(id string), cron string) {
+	rJob := c.formatJob(key, cmd)
 	err := goToolCron.AddFunc(
 		key,
 		cron,
-		goServiceSupportHelper.NewJob().FormatSSJob(key, cmd),
+		goServiceSupportHelper.NewJob().FormatSSJob(key, rJob),
 		c.panicHandle)
 	if err != nil {
 		errMsg := fmt.Sprintf("add job [%s] error: %s", key, err.Error())
 		log.Error(errMsg)
+	}
+}
+
+func (c *common) formatJob(key string, cmd func(id string)) func(id string) {
+	return func(id string) {
+		log.Debug(fmt.Sprintf("%s %s Start", key, id))
+		defer log.Debug(fmt.Sprintf("%s %s Complete", key, id))
+		cmd(id)
 	}
 }
 
@@ -213,4 +222,5 @@ func (c *common) addBbWorker() {
 	worker := NewBbWorker()
 	c.addWorker("RestoreMdYyInfo", worker.RestoreMdYyInfo, global.SysConfig.Task.BbRestoreCron)
 	c.addWorker("RestoreZxKc", worker.RestoreZxKc, global.SysConfig.Task.BbRestoreCron)
+	c.addWorker("RestoreMdHpXsSlHz", worker.RestoreMdHpXsSlHz, global.SysConfig.Task.BbRestoreCron)
 }
