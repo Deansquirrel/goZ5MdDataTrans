@@ -23,14 +23,20 @@ const (
 		"IF EXISTS (SELECT * FROM mdyyinfolastupdate WHERE MDID=?) " +
 		"	BEGIN " +
 		"		UPDATE mdyyinfolastupdate " +
-		"		SET yyr = ?,oprtime=GETDATE() " +
+		"		SET yyr = ?,oprtime= ? " +
 		"		WHERE mdid = ? " +
 		"	END " +
 		"ELSE " +
 		"	BEGIN " +
 		"		INSERT INTO mdyyinfolastupdate(mdid,yyr,oprtime) " +
-		"		VALUES (?,?,GETDATE()) " +
+		"		VALUES (?,?,?) " +
 		"	END"
+	sqlUpdateZxKc = "" +
+		"INSERT INTO [zxkc]([mdid],[hpid],[sl],[oprtime]) " +
+		"VALUES (?,?,?,?)"
+	sqlUpdateMdHpXsSlHz = "" +
+		"INSERT INTO [mdhpxsslhz]([yydate],[mdid],[hpid],[xsqty],[jlsj]) " +
+		"VALUES (?,?,?,?,?)"
 )
 
 type repOnline struct {
@@ -93,8 +99,8 @@ func (r *repOnline) UpdateMdYyInfoLastUpdate(t time.Time) error {
 	}
 	err = goToolMSSqlHelper.SetRowsBySQL(r.dbConfig, sqlUpdateMdYyInfoLastUpdate,
 		mdId,
-		t, mdId,
-		mdId, t)
+		t, time.Now(), mdId,
+		mdId, t, time.Now())
 	if err != nil {
 		errMsg := fmt.Sprintf("UpdateMdYyInfoLastUpdate err: %s", err.Error())
 		log.Error(errMsg)
@@ -115,12 +121,24 @@ func (r *repOnline) UpdateMdYyInfo(d *object.MdYyInfo) error {
 }
 
 func (r *repOnline) UpdateZxKc(d *object.ZxKc) error {
-	//TODO
+	err := goToolMSSqlHelper.SetRowsBySQL(r.dbConfig, sqlUpdateZxKc,
+		d.FMdId, d.FHpId, d.FSl, d.FOprTime)
+	if err != nil {
+		errMsg := fmt.Sprintf("UpdateZxKc err: %s", err.Error())
+		log.Error(errMsg)
+		return errors.New(errMsg)
+	}
 	return nil
 }
 
-func (r *repOnline) UpdateMdHpXsSlHz(d []*object.MdHpXsSlHz) error {
-	//TODO
+func (r *repOnline) UpdateMdHpXsSlHz(d *object.MdHpXsSlHz) error {
+	err := goToolMSSqlHelper.SetRowsBySQL(r.dbConfig, sqlUpdateMdHpXsSlHz,
+		d.FYyDate, d.FMdId, d.FHpId, d.FXsQty, d.FOprTime)
+	if err != nil {
+		errMsg := fmt.Sprintf("UpdateMdHpXsSlHz err: %s", err.Error())
+		log.Error(errMsg)
+		return errors.New(errMsg)
+	}
 	return nil
 }
 

@@ -203,8 +203,8 @@ func (c *common) addWorker(key string, cmd func(id string), cron string) {
 func (c *common) addMdWorker() {
 	log.Debug("add md worker")
 	worker := NewMdWorker()
-	//c.addWorker("UpdateMdYyInfo", worker.UpdateMdYyInfo,global.SysConfig.Task.UpdateMdYyInfoCron)
-	c.addWorker("UpdateMdYyInfo", worker.UpdateMdYyInfo, "0/15 * * * * ?")
+	c.addWorker("UpdateMdYyInfo", worker.UpdateMdYyInfo, global.SysConfig.Task.UpdateMdYyInfoCron)
+	c.addWorker("UpdateZxKc", worker.UpdateZxKc, global.SysConfig.Task.UpdateZxKcCron)
 	//c.addWorker("Z3XsCkt", worker.Z3XsCkt)
 	//c.addWorker("Z3XsTht", worker.Z3XsTht)
 	//c.addWorker("Z3MdDbCkt", worker.Z3MdDbCkt)

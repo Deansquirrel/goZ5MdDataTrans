@@ -38,7 +38,8 @@ const (
 		"	Union All " +
 		"	Select jrdhbilldate,jrdhoprbrid,Cast(1 As int),jrdhtktsum From [ywjrdht] a " +
 		"	Where jrdhbilldate>=@begdate And jrdhbilldate<@enddate " +
-		")  b group by billdate,brid"
+		")  b group by billdate,brid " +
+		"order by billdate asc"
 	sqlGetMdId = "" +
 		"select coid " +
 		"from zlcompany"
