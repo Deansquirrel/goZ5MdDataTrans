@@ -1,8 +1,19 @@
 package object
 
-import "time"
+import (
+	"time"
+)
 
 type MdYyInfo struct {
+	FMdId    int
+	FYyr     time.Time
+	FTc      int
+	FSr      float64
+	FOprTime time.Time
+}
+
+type MdYyInfoOpr struct {
+	OprSn    int64
 	FMdId    int
 	FYyr     time.Time
 	FTc      int

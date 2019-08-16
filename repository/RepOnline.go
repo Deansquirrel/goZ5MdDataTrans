@@ -53,6 +53,24 @@ const (
 		"		INSERT INTO mdhpxsslhzlastupdate(mdid,yyr,oprtime) " +
 		"		VALUES (?,?,?) " +
 		"	END"
+
+	sqlGetMdYyInfoOpr = "" +
+		"SELECT top 1 [oprsn],[mdid],[yyr],[tc],[sr],[oprtime] " +
+		"FROM [mdyyinfo] " +
+		"ORDER BY [oprsn] ASC"
+
+	sqlDelMdYyInfoOpr = "" +
+		"DELETE FROM [mdyyinfo] " +
+		"WHERE [oprsn]=?"
+
+	sqlGetZxKcOpr = "" +
+		"SELECT TOP 1 [oprsn],[mdid],[hpid],[sl],[oprtime] " +
+		"FROM [zxkc] " +
+		"ORDER BY [oprsn] ASC"
+
+	sqlDelZxKcOpr = "" +
+		"DELETE FROM [zxkc] " +
+		"WHERE [oprsn]=?"
 )
 
 type repOnline struct {
@@ -214,9 +232,53 @@ func (r *repOnline) UpdateMdHpXsSlHz(d *object.MdHpXsSlHz) error {
 	return nil
 }
 
-func (r *repOnline) GetMdYyInfo() ([]*object.MdYyInfo, error) {
-	//TODO
-	return nil, nil
+func (r *repOnline) GetMdYyInfoOpr() ([]*object.MdYyInfoOpr, error) {
+	rows, err := goToolMSSqlHelper.GetRowsBySQL(r.dbConfig, sqlGetMdYyInfoOpr)
+	if err != nil {
+		errMsg := fmt.Sprintf("GetMdYyInfoOpr err: %s", err.Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	rList := make([]*object.MdYyInfoOpr, 0)
+	var oprSn int64
+	var mdId, tc int
+	var yyr, oprTime time.Time
+	var sr float64
+	for rows.Next() {
+		err = rows.Scan(&oprSn, &mdId, &yyr, &tc, &sr, &oprTime)
+		if err != nil {
+			errMsg := fmt.Sprintf("GetMdYyInfoOpr read data err: %s", err.Error())
+			log.Error(errMsg)
+			return nil, errors.New(errMsg)
+		}
+		rList = append(rList, &object.MdYyInfoOpr{
+			OprSn:    oprSn,
+			FMdId:    mdId,
+			FYyr:     yyr,
+			FTc:      tc,
+			FSr:      sr,
+			FOprTime: oprTime,
+		})
+	}
+	if rows.Err() != nil {
+		errMsg := fmt.Sprintf("GetMdYyInfoOpr read data err: %s", rows.Err().Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	return rList, nil
+}
+
+func (r *repOnline) DelMdYyInfoOpr(sn int64) error {
+	err := goToolMSSqlHelper.SetRowsBySQL2000(goToolMSSqlHelper.ConvertDbConfigTo2000(r.dbConfig), sqlDelMdYyInfoOpr, sn)
+	if err != nil {
+		errMsg := fmt.Sprintf("DelMdYyInfoOpr err: %s", err.Error())
+		log.Error(errMsg)
+		return errors.New(errMsg)
+	}
+	return nil
 }
 
 func (r *repOnline) GetZxKc() ([]*object.ZxKc, error) {

@@ -210,6 +210,6 @@ func (c *common) addMdWorker() {
 
 func (c *common) addBbWorker() {
 	log.Debug("add bb worker")
-	//worker := NewBbWorker()
-	//c.addWorker("Test", worker.Test)
+	worker := NewBbWorker()
+	c.addWorker("RestoreMdYyInfo", worker.RestoreMdYyInfo, global.SysConfig.Task.BbRestoreCron)
 }
