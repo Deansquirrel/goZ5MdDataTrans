@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/Deansquirrel/goToolMSSql2000"
@@ -32,6 +33,7 @@ const (
 		"	Union All " +
 		"	Select xsckbilldate,xsckoprbrid,Cast(xsckpeople As int),xsckrealmy From [ywxsckt1] " +
 		"	Where xsckbilldate>=@begdate And xsckbilldate<@enddate " +
+		"	%s " +
 		"	Union All " +
 		"	Select qdxsbilldate,qdxsdoprbrid,Cast(1 As int),qdxsrealmy From [ywddqdxst] " +
 		"	Where qdxsbilldate>=@begdate And qdxsbilldate<@enddate " +
@@ -40,6 +42,10 @@ const (
 		"	Where jrdhbilldate>=@begdate And jrdhbilldate<@enddate " +
 		")  b group by billdate,brid " +
 		"order by billdate asc"
+	sqlGetJtMdYyInfoTemplete = "" +
+		"	Union All " +
+		"	Select xsckbilldate,xsckoprbrid,Cast(xsckpeople As int),xsckrealmy From [%s] " +
+		"	Where xsckbilldate>=@begdate And xsckbilldate<@enddate "
 	sqlGetMdId = "" +
 		"select coid " +
 		"from zlcompany"
@@ -79,6 +85,10 @@ const (
 		"    where b.jrdhbilldate>=convert(varchar(10),@begdate,121) and b.jrdhbilldate<convert(varchar(10),dateadd(d,1,@enddate),121) " +
 		")a " +
 		"group by rq,brid,gsid  "
+	sqlGetJtTableList = "" +
+		"select name " +
+		"from sysobjects " +
+		"where xtype='U' and name like 'ywxsckt1[_]__[_]jt'"
 )
 
 type repMd struct {
@@ -97,7 +107,7 @@ func (r *repMd) GetLastMdYyDate() (time.Time, error) {
 	if err != nil {
 		errMsg := fmt.Sprintf("GetLastMdYyDate err: %s", err.Error())
 		log.Error(errMsg)
-		return time.Now(), errors.New(errMsg)
+		return goToolMSSqlHelper.GetDefaultOprTime(), errors.New(errMsg)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -108,24 +118,24 @@ func (r *repMd) GetLastMdYyDate() (time.Time, error) {
 		if err != nil {
 			errMsg := fmt.Sprintf("GetLastMdYyDate read data err: %s", err.Error())
 			log.Error(errMsg)
-			return time.Now(), errors.New(errMsg)
+			return goToolMSSqlHelper.GetDefaultOprTime(), errors.New(errMsg)
 		}
 	}
 	if rows.Err() != nil {
 		errMsg := fmt.Sprintf("GetLastMdYyDate read data err: %s", rows.Err().Error())
 		log.Error(errMsg)
-		return time.Now(), errors.New(errMsg)
+		return goToolMSSqlHelper.GetDefaultOprTime(), errors.New(errMsg)
 	}
 	if sResult != "" {
 		tResult, err := time.Parse("20060102", sResult)
 		if err != nil {
 			errMsg := fmt.Sprintf("GetLastMdYyDate err: %s", err.Error())
 			log.Error(errMsg)
-			return time.Now(), errors.New(errMsg)
+			return goToolMSSqlHelper.GetDefaultOprTime(), errors.New(errMsg)
 		}
 		return tResult, nil
 	} else {
-		return time.Now(), errors.New("GetLastMdYyDate return empty")
+		return goToolMSSqlHelper.GetDefaultOprTime(), errors.New("GetLastMdYyDate return empty")
 	}
 }
 
@@ -134,7 +144,7 @@ func (r *repMd) GetLastMdYyClosedDate() (time.Time, error) {
 	if err != nil {
 		errMsg := fmt.Sprintf("GetLastMdYyDate err: %s", err.Error())
 		log.Error(errMsg)
-		return time.Now(), errors.New(errMsg)
+		return goToolMSSqlHelper.GetDefaultOprTime(), errors.New(errMsg)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -145,24 +155,24 @@ func (r *repMd) GetLastMdYyClosedDate() (time.Time, error) {
 		if err != nil {
 			errMsg := fmt.Sprintf("GetLastMdYyDate read data err: %s", err.Error())
 			log.Error(errMsg)
-			return time.Now(), errors.New(errMsg)
+			return goToolMSSqlHelper.GetDefaultOprTime(), errors.New(errMsg)
 		}
 	}
 	if rows.Err() != nil {
 		errMsg := fmt.Sprintf("GetLastMdYyDate read data err: %s", rows.Err().Error())
 		log.Error(errMsg)
-		return time.Now(), errors.New(errMsg)
+		return goToolMSSqlHelper.GetDefaultOprTime(), errors.New(errMsg)
 	}
 	if sResult != "" {
 		tResult, err := time.Parse("20060102", sResult)
 		if err != nil {
 			errMsg := fmt.Sprintf("GetLastMdYyDate err: %s", err.Error())
 			log.Error(errMsg)
-			return time.Now(), errors.New(errMsg)
+			return goToolMSSqlHelper.GetDefaultOprTime(), errors.New(errMsg)
 		}
 		return tResult, nil
 	} else {
-		return time.Now(), errors.New("GetLastMdYyDate return empty")
+		return goToolMSSqlHelper.GetDefaultOprTime(), errors.New("GetLastMdYyDate return empty")
 	}
 }
 
@@ -200,7 +210,11 @@ func (r *repMd) GetMdId() (int, error) {
 }
 
 func (r *repMd) GetMdYyInfo(begDate string, endDate string) ([]*object.MdYyInfo, error) {
-	rows, err := goToolMSSqlHelper.GetRowsBySQL2000(r.dbConfig, sqlGetMdYyInfo, begDate, endDate)
+	sqlStr, err := r.getMdYyInfoSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := goToolMSSqlHelper.GetRowsBySQL2000(r.dbConfig, sqlStr, begDate, endDate)
 	if err != nil {
 		errMsg := fmt.Sprintf("GetMdYyInfo err: %s", err.Error())
 		log.Error(errMsg)
@@ -234,6 +248,18 @@ func (r *repMd) GetMdYyInfo(begDate string, endDate string) ([]*object.MdYyInfo,
 		return nil, errors.New(errMsg)
 	}
 	return rList, nil
+}
+
+func (r *repMd) getMdYyInfoSql() (string, error) {
+	jtTable, err := r.GetJtTableList()
+	if err != nil {
+		return "", err
+	}
+	var buffer bytes.Buffer
+	for _, t := range jtTable {
+		buffer.WriteString(fmt.Sprintf(sqlGetJtMdYyInfoTemplete, t))
+	}
+	return fmt.Sprintf(sqlGetMdYyInfo, buffer.String()), nil
 }
 
 func (r *repMd) GetZxKc() ([]*object.ZxKc, error) {
@@ -302,6 +328,35 @@ func (r *repMd) GetMdHpXsSlHz(begDate string, endDate string) ([]*object.MdHpXsS
 	}
 	if rows.Err() != nil {
 		errMsg := fmt.Sprintf("read GetMdHpXsSlHz data err: %s", rows.Err().Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	return rList, nil
+}
+
+func (r *repMd) GetJtTableList() ([]string, error) {
+	rows, err := goToolMSSqlHelper.GetRowsBySQL2000(r.dbConfig, sqlGetJtTableList)
+	if err != nil {
+		errMsg := fmt.Sprintf("GetJtTableList err: %s", err.Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	rList := make([]string, 0)
+	for rows.Next() {
+		var t string
+		err = rows.Scan(&t)
+		if err != nil {
+			errMsg := fmt.Sprintf("GetJtTableList read data err: %s", err.Error())
+			log.Error(errMsg)
+			return nil, errors.New(errMsg)
+		}
+		rList = append(rList, t)
+	}
+	if rows.Err() != nil {
+		errMsg := fmt.Sprintf("GetJtTableList read data err: %s", rows.Err().Error())
 		log.Error(errMsg)
 		return nil, errors.New(errMsg)
 	}
