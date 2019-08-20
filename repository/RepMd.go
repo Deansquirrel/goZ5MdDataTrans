@@ -66,6 +66,7 @@ const (
 		"    select xsckhdbilldate,xsckhdgsid,xsckhdqty,xsckhdoprbrid " +
 		"    from ywxsckhdt " +
 		"    where xsckhdbilldate>=convert(varchar(10),@begdate,121) and xsckhdbilldate<convert(varchar(10),dateadd(d,1,@enddate),121) " +
+		"	 %s " +
 		"    Union All " +
 		"    select xsthhdbilldate,xsthhdgsid,-xsthhdqty,xsthhdoprbrid " +
 		"    from ywxsthhdt " +
@@ -85,10 +86,19 @@ const (
 		"    where b.jrdhbilldate>=convert(varchar(10),@begdate,121) and b.jrdhbilldate<convert(varchar(10),dateadd(d,1,@enddate),121) " +
 		")a " +
 		"group by rq,brid,gsid  "
-	sqlGetJtTableList = "" +
+	sqlGetJtMdHpXsSlHzTemplete = "" +
+		"    Union All " +
+		"    select xsckhdbilldate,xsckhdgsid,xsckhdqty,xsckhdoprbrid " +
+		"    from [%s] " +
+		"    where xsckhdbilldate>=convert(varchar(10),@begdate,121) and xsckhdbilldate<convert(varchar(10),dateadd(d,1,@enddate),121) "
+	sqlGetJtMdYyInfoTableList = "" +
 		"select name " +
 		"from sysobjects " +
 		"where xtype='U' and name like 'ywxsckt1[_]__[_]jt'"
+	sqlGetJtMdHpXsSlHzTableList = "" +
+		"select name " +
+		"from sysobjects " +
+		"where xtype='U' and name like 'ywxsckhdt[_]__[_]jt'"
 )
 
 type repMd struct {
@@ -251,7 +261,7 @@ func (r *repMd) GetMdYyInfo(begDate string, endDate string) ([]*object.MdYyInfo,
 }
 
 func (r *repMd) getMdYyInfoSql() (string, error) {
-	jtTable, err := r.GetJtTableList()
+	jtTable, err := r.GetJtMdYyInfoTableList()
 	if err != nil {
 		return "", err
 	}
@@ -298,7 +308,11 @@ func (r *repMd) GetZxKc() ([]*object.ZxKc, error) {
 }
 
 func (r *repMd) GetMdHpXsSlHz(begDate string, endDate string) ([]*object.MdHpXsSlHz, error) {
-	rows, err := goToolMSSqlHelper.GetRowsBySQL2000(r.dbConfig, sqlGetMdHpXsSlHz, begDate, endDate)
+	sqlStr, err := r.getMdHpXsSlHzSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := goToolMSSqlHelper.GetRowsBySQL2000(r.dbConfig, sqlStr, begDate, endDate)
 	if err != nil {
 		errMsg := fmt.Sprintf("GetMdHpXsSlHz err: %s", err.Error())
 		log.Error(errMsg)
@@ -334,8 +348,20 @@ func (r *repMd) GetMdHpXsSlHz(begDate string, endDate string) ([]*object.MdHpXsS
 	return rList, nil
 }
 
-func (r *repMd) GetJtTableList() ([]string, error) {
-	rows, err := goToolMSSqlHelper.GetRowsBySQL2000(r.dbConfig, sqlGetJtTableList)
+func (r *repMd) getMdHpXsSlHzSql() (string, error) {
+	jtTable, err := r.GetJtMdHpXsSlHzTableList()
+	if err != nil {
+		return "", err
+	}
+	var buffer bytes.Buffer
+	for _, t := range jtTable {
+		buffer.WriteString(fmt.Sprintf(sqlGetJtMdHpXsSlHzTemplete, t))
+	}
+	return fmt.Sprintf(sqlGetMdHpXsSlHz, buffer.String()), nil
+}
+
+func (r *repMd) GetJtMdYyInfoTableList() ([]string, error) {
+	rows, err := goToolMSSqlHelper.GetRowsBySQL2000(r.dbConfig, sqlGetJtMdYyInfoTableList)
 	if err != nil {
 		errMsg := fmt.Sprintf("GetJtTableList err: %s", err.Error())
 		log.Error(errMsg)
@@ -357,6 +383,35 @@ func (r *repMd) GetJtTableList() ([]string, error) {
 	}
 	if rows.Err() != nil {
 		errMsg := fmt.Sprintf("GetJtTableList read data err: %s", rows.Err().Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	return rList, nil
+}
+
+func (r *repMd) GetJtMdHpXsSlHzTableList() ([]string, error) {
+	rows, err := goToolMSSqlHelper.GetRowsBySQL2000(r.dbConfig, sqlGetJtMdHpXsSlHzTableList)
+	if err != nil {
+		errMsg := fmt.Sprintf("GetJtMdHpXsSlHzTableList err: %s", err.Error())
+		log.Error(errMsg)
+		return nil, errors.New(errMsg)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	rList := make([]string, 0)
+	for rows.Next() {
+		var t string
+		err = rows.Scan(&t)
+		if err != nil {
+			errMsg := fmt.Sprintf("GetJtMdHpXsSlHzTableList read data err: %s", err.Error())
+			log.Error(errMsg)
+			return nil, errors.New(errMsg)
+		}
+		rList = append(rList, t)
+	}
+	if rows.Err() != nil {
+		errMsg := fmt.Sprintf("GetJtMdHpXsSlHzTableList read data err: %s", rows.Err().Error())
 		log.Error(errMsg)
 		return nil, errors.New(errMsg)
 	}
