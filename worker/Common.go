@@ -131,7 +131,7 @@ func (c *common) refreshLocalDbConfig() error {
 			global.SysConfig.LocalDb.DbName = accList[0]
 		}
 	default:
-		errMsg := fmt.Sprintf("unexpected runmode %d", global.SysConfig.RunMode.Mode)
+		errMsg := fmt.Sprintf("unexpected runmode %s", global.SysConfig.RunMode.Mode)
 		log.Error(errMsg)
 		global.Cancel()
 		return errors.New(errMsg)
