@@ -7,9 +7,9 @@ import (
 
 const (
 	//goServiceSupportHelper Version "1.0.5 Build20190821"
-	//PreVersion = "1.0.1 Build20190820"
+	//PreVersion = "1.0.2 Build20190821"
 	//TestVersion = "0.0.0 Build20190101"
-	Version   = "1.0.2 Build20190821"
+	Version   = "0.0.0 Build20190101"
 	Type      = "Z5MdDataTrans"
 	SecretKey = "Z5MdDataTrans"
 )
