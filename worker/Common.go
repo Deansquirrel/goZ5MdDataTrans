@@ -43,12 +43,21 @@ func (c *common) refreshLocalDbConfig() error {
 	var err error
 	switch global.SysConfig.RunMode.Mode {
 	case string(object.RunModeMdCollect):
-		dbConfig, err = goToolSVRZ5.GetSQLConfig(global.SysConfig.SvrConfig.Address, goToolSVRZ5.MD)
-		if err != nil {
-			errMsg := fmt.Sprintf("get dbConfig from svr z5 md err: %s", err.Error())
-			log.Error(errMsg)
-			return errors.New(errMsg)
+		for {
+			dbConfig, err = goToolSVRZ5.GetSQLConfig(global.SysConfig.SvrConfig.Address, goToolSVRZ5.MD)
+			errMsgT := ""
+			if err != nil {
+				errMsg := fmt.Sprintf("get dbConfig from svr z5 md err: %s", err.Error())
+				if errMsgT != errMsg {
+					log.Error(errMsg)
+					errMsgT = errMsg
+				}
+				time.Sleep(time.Second * 5)
+			} else {
+				break
+			}
 		}
+
 		if dbConfig == nil {
 			errMsg := fmt.Sprintf("get dbConfig from svr v5 return nil")
 			log.Error(errMsg)
