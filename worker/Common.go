@@ -52,7 +52,7 @@ func (c *common) refreshLocalDbConfig() error {
 					log.Error(errMsg)
 					errMsgT = errMsg
 				}
-				time.Sleep(time.Second * 5)
+				time.Sleep(time.Second)
 			} else {
 				break
 			}
