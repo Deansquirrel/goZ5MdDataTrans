@@ -12,6 +12,7 @@ import (
 	"github.com/Deansquirrel/goZ5MdDataTrans/global"
 	"github.com/Deansquirrel/goZ5MdDataTrans/object"
 	"github.com/Deansquirrel/goZ5MdDataTrans/repository"
+	"strings"
 	"time"
 )
 
@@ -41,14 +42,15 @@ func (c *common) checkSysConfig() bool {
 func (c *common) refreshLocalDbConfig() error {
 	var dbConfig *goToolMSSql.MSSqlConfig
 	var err error
+	var errMsg string
+	var errMsgT string
 	switch global.SysConfig.RunMode.Mode {
 	case string(object.RunModeMdCollect):
 		for {
 			dbConfig, err = goToolSVRZ5.GetSQLConfig(global.SysConfig.SvrConfig.Address, goToolSVRZ5.MD)
-			errMsgT := ""
 			if err != nil {
-				errMsg := fmt.Sprintf("get dbConfig from svr z5 md err: %s", err.Error())
-				if errMsgT != errMsg {
+				errMsg = fmt.Sprintf("get dbConfig from svr z5 md err: %s", err.Error())
+				if strings.Compare(strings.Trim(errMsgT, ""), strings.Trim(errMsg, "")) != 0 {
 					log.Error(errMsg)
 					errMsgT = errMsg
 				}
@@ -59,23 +61,23 @@ func (c *common) refreshLocalDbConfig() error {
 		}
 
 		if dbConfig == nil {
-			errMsg := fmt.Sprintf("get dbConfig from svr v5 return nil")
+			errMsg = fmt.Sprintf("get dbConfig from svr v5 return nil")
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		accList, err := goToolSVRZ5.GetAccountList(goToolMSSqlHelper.ConvertDbConfigTo2000(dbConfig), goToolSVRZ5.MD)
 		if err != nil {
-			errMsg := fmt.Sprintf("get acc list from svr z5 md err: %s", err.Error())
+			errMsg = fmt.Sprintf("get acc list from svr z5 md err: %s", err.Error())
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		if accList == nil {
-			errMsg := fmt.Sprintf("get acc list from svr z5 md err: return nil")
+			errMsg = fmt.Sprintf("get acc list from svr z5 md err: return nil")
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		if len(accList) < 1 {
-			errMsg := fmt.Sprintf("get acc list from svr z5 md err: list is empty")
+			errMsg = fmt.Sprintf("get acc list from svr z5 md err: list is empty")
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
@@ -98,28 +100,28 @@ func (c *common) refreshLocalDbConfig() error {
 	case string(object.RunModeBbRestore):
 		dbConfig, err = goToolSVRV3.GetSQLConfig(global.SysConfig.SvrConfig.Address, 7091, "91", "9101")
 		if err != nil {
-			errMsg := fmt.Sprintf("get dbConfig from svr v3 err: %s", err.Error())
+			errMsg = fmt.Sprintf("get dbConfig from svr v3 err: %s", err.Error())
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		if dbConfig == nil {
-			errMsg := fmt.Sprintf("get dbConfig from svr v3 return nil")
+			errMsg = fmt.Sprintf("get dbConfig from svr v3 return nil")
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		accList, err := goToolSVRV3.GetAccountList(goToolMSSqlHelper.ConvertDbConfigTo2000(dbConfig), "91")
 		if err != nil {
-			errMsg := fmt.Sprintf("get acc list err: %s", err.Error())
+			errMsg = fmt.Sprintf("get acc list err: %s", err.Error())
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		if accList == nil {
-			errMsg := fmt.Sprintf("get acc list from svr v3 err: return nil")
+			errMsg = fmt.Sprintf("get acc list from svr v3 err: return nil")
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		if len(accList) < 1 {
-			errMsg := fmt.Sprintf("get acc list from svr v3 err: list is empty")
+			errMsg = fmt.Sprintf("get acc list from svr v3 err: list is empty")
 			log.Error(errMsg)
 			return errors.New(errMsg)
 		}
@@ -140,7 +142,7 @@ func (c *common) refreshLocalDbConfig() error {
 			global.SysConfig.LocalDb.DbName = accList[0]
 		}
 	default:
-		errMsg := fmt.Sprintf("unexpected runmode %s", global.SysConfig.RunMode.Mode)
+		errMsg = fmt.Sprintf("unexpected runmode %s", global.SysConfig.RunMode.Mode)
 		log.Error(errMsg)
 		global.Cancel()
 		return errors.New(errMsg)
@@ -152,7 +154,7 @@ func (c *common) refreshLocalDbConfig() error {
 	global.SysConfig.LocalDb.Pwd = dbConfig.Pwd
 
 	if global.SysConfig.LocalDb.DbName == "" {
-		errMsg := fmt.Sprintf("无可用账套")
+		errMsg = fmt.Sprintf("无可用账套")
 		log.Error(errMsg)
 		return errors.New(errMsg)
 	}

@@ -137,7 +137,10 @@ func (p *program) run() error {
 	log.Warn("Service Starting")
 	defer log.Warn("Service Started")
 	{
-		return myService.StartService()
+		go func() {
+			_ = myService.StartService()
+		}()
+		return nil
 	}
 }
 
